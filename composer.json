@@ -1,5 +1,5 @@
 {
-    "name": "civocr/Nexmo-PHP-lib",
+    "name": "civocr/nexmo-php-lib",
     "require": {
         "php": ">=5.3.0"
     }
