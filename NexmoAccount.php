@@ -29,16 +29,20 @@
 			'cancel_number' => array('method' => 'POST', 'url' => '/number/cancel/{k}/{s}/{country_code}/{msisdn}')
 		);
 
+		private $timeout;
+
 
 		private $cache = array();
 
 		/**
-		 * @param $nx_key Your Nexmo account key
-		 * @param $nx_secret Your Nexmo secret
+		 * @param string $api_key Your Nexmo account key
+		 * @param string $api_secret Your Nexmo secret
+		 * @param int $timeout Request timeout
 		 */
-		public function __construct ($api_key, $api_secret) {
+		public function __construct ($api_key, $api_secret, $timeout = null) {
 			$this->nx_key = $api_key;
 			$this->nx_secret = $api_secret;
+			$this->timeout = $timeout;
 		}
 
 
@@ -201,6 +205,10 @@
 					curl_setopt( $to_nexmo, CURLOPT_POSTFIELDS, $post_data );
 				}
 
+				if ($this->timeout) {
+					curl_setopt( $to_nexmo, CURLOPT_TIMEOUT, $this->timeout );
+				}
+
 				$from_nexmo = curl_exec( $to_nexmo );
 				$curl_info = curl_getinfo($to_nexmo);
 				$http_response_code = $curl_info['http_code'];
@@ -215,6 +223,10 @@
 						'header'  => 'Accept: application/json'
 					)
 				);
+
+				if ($this->timeout) {
+					$opts['http']['timeout'] = $this->timeout;
+				}
 
 				if ($cmd['method'] == 'POST') {
 					$opts['http']['method'] = 'POST';
@@ -241,4 +253,14 @@
 			);
 
 		}
+
+		/**
+		 * Set the curl request timeout
+		 * @param int $timeout
+		 */
+		public function setTimeout($timeout)
+		{
+			$this->timeout = $timeout;
+		}
+
 	}

@@ -32,6 +32,8 @@ class NexmoMessage {
 	 */
 	var $nx_uri = 'https://rest.nexmo.com/sms/json';
 
+	private $timeout;
+
 	
 	/**
 	 * @var array The most recent parsed Nexmo response.
@@ -56,9 +58,10 @@ class NexmoMessage {
 	public $ssl_verify = false; // Verify Nexmo SSL before sending any message
 
 
-	function NexmoMessage ($api_key, $api_secret) {
+	function NexmoMessage ($api_key, $api_secret, $timeout = null) {
 		$this->nx_key = $api_key;
 		$this->nx_secret = $api_secret;
+		$this->timeout = $timeout;
 	}
 
 
@@ -184,19 +187,27 @@ class NexmoMessage {
 				curl_setopt( $to_nexmo, CURLOPT_SSL_VERIFYPEER, false);
 			}
 
+			if ($this->timeout) {
+				curl_setopt( $to_nexmo, CURLOPT_TIMEOUT, $this->timeout );
+			}
+
 			$from_nexmo = curl_exec( $to_nexmo );
 			curl_close ( $to_nexmo );
 
 		} elseif (ini_get('allow_url_fopen')) {
 			// No CURL available so try the awesome file_get_contents
 
-			$opts = array('http' =>
-				array(
-					'method'  => 'POST',
-					'header'  => 'Content-type: application/x-www-form-urlencoded',
-					'content' => $post
-				)
-			);
+			$http_options = [
+				'method'  => 'POST',
+				'header'  => 'Content-type: application/x-www-form-urlencoded',
+				'content' => $post
+			];
+
+			if ($this->timeout) {
+				$http_options['timeout'] = $this->timeout;
+			}
+
+			$opts = array('http' => $http_options);
 			$context = stream_context_create($opts);
 			$from_nexmo = file_get_contents($this->nx_uri, false, $context);
 
@@ -429,6 +440,15 @@ class NexmoMessage {
 		}
 
 		return $this->sendText($this->from, $this->to, $message);
+	}
+
+	/**
+	 * Set the curl request timeout
+	 * @param int $timeout
+	 */
+	public function setTimeout($timeout)
+	{
+		$this->timeout = $timeout;
 	}
 
 }
