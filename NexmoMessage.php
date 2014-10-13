@@ -197,11 +197,11 @@ class NexmoMessage {
 		} elseif (ini_get('allow_url_fopen')) {
 			// No CURL available so try the awesome file_get_contents
 
-			$http_options = [
+			$http_options = array(
 				'method'  => 'POST',
 				'header'  => 'Content-type: application/x-www-form-urlencoded',
 				'content' => $post
-			];
+			);
 
 			if ($this->timeout) {
 				$http_options['timeout'] = $this->timeout;
